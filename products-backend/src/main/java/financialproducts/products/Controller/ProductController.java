@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import financialproducts.products.Model.Product; 
 import financialproducts.products.Service.ProductService;
+import java.util.List;
 import java.util.Map;
-
+import java.util.HashMap;
+import java.util.ArrayList;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:8081")  
@@ -50,5 +52,22 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "產品未找到"));
         }
         return ResponseEntity.ok(productData);
+    }
+
+    @GetMapping("/getProductList")
+    public List<String> getProductList() {
+        try {
+            return productService.getProductList();
+        } catch (Exception e) {
+            throw new RuntimeException("資料載入失敗", e);
+        }
+    }
+
+    @GetMapping("/search")
+    public Map<String, Object> searchProduct(
+            @RequestParam(defaultValue = "1") int page,  
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String productName) {  
+        return productService.searchProduct(page, pageSize, productName);
     }
 }

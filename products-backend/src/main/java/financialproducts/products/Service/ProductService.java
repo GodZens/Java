@@ -5,7 +5,10 @@ import financialproducts.products.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 @Service
 public class ProductService {
@@ -26,5 +29,13 @@ public class ProductService {
 
     public Map<String, Object> getProductInformation(String LikelistNo) {
         return productRepository.getProductInformation(LikelistNo);
+    }
+
+    public List<String> getProductList() {
+        return productRepository.getProductList();
+    }
+    
+    public Map<String, Object> searchProduct(int page, int pageSize,String productName) {
+        return productRepository.searchProduct(page, pageSize, productName);
     }
 }

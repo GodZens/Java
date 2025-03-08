@@ -10,6 +10,44 @@ const currentPage = ref(1); // 當前頁數
 const pageSize = ref(10); // 每頁顯示 10 筆
 const totalItems = ref(0); // 總資料筆數
 
+// 儲存產品資料
+const productLists = ref([]);
+
+// 取得產品資料的函數
+const fetchProductList = async () => {
+    try {
+        const response = await axios.get('http://localhost:8080/api/products/getProductList');
+        productLists.value = response.data;
+
+    } catch (error) {
+        console.error("獲取產品資料失敗", error);
+    }
+};
+
+// 定義狀態
+const selectedProduct = ref(null);  // 使用 ref 來定義 selectedProduct
+
+// 查詢產品方法
+const searchProduct = () => {
+    if (selectedProduct.value) {
+        const response = axios.get(`http://localhost:8080/api/products/search`, {
+            params: {
+                productName: selectedProduct.value,
+                page: currentPage.value,
+                pageSize: pageSize.value,
+            },
+        }).then(response => {
+            products.value = response.data.products; // 儲存查詢到的產品資料
+            totalItems.value = response.data.total; // 儲存總產品數量
+        })
+            .catch(error => {
+                console.error("查詢產品資料時發生錯誤", error);
+            });
+    } else {
+        alert("請選擇一個產品進行查詢");
+    }
+};
+
 // 計算總頁數
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
 
@@ -34,6 +72,9 @@ const goToAddPage = () => {
     router.push({ name: 'AddProduct', })
 }
 
+const goToAddAccount = () => {
+    router.push({ name: 'AddAccount', })
+}
 const goToEditPage = (LikelistNo) => {
     router.push({ name: 'EditProduct', params: { LikelistNo: LikelistNo } })
 }
@@ -43,7 +84,7 @@ const deleteProduct = (LikelistNo) => {
         LikelistNo: LikelistNo,
     };
     axios.post('http://localhost:8080/api/LikeList/deleteLikeList', requestBody)
-    .then(response => {
+        .then(response => {
             console.log(response); // 打印 response 或做其他處理
             alert('成功刪除產品');
             window.location.reload(); // 重新載入當前頁面
@@ -69,22 +110,39 @@ window.addEventListener("pageshow", (event) => {
 });
 
 // 初次載入資料
-onMounted(fetchProducts);
+// 生命週期鉤子，組件掛載時呼叫
+onMounted(() => {
+    fetchProducts();
+    fetchProductList();
+});
 </script>
 
 <template>
     <div class="p-6">
         <h1 class="text-2xl font-bold mb-4 text-center">產品列表</h1>
-
-        <button  @click="goToAddPage()"
+        <button @click="goToAddAccount()"
             class="px-4 py-2 bg-white mb-4 text-black border border-gray-300 rounded-md hover:bg-gray-200 transition duration-200 text-sm">
             新增帳號
         </button>
 
-        <button  @click="goToAddPage()"
+        <button @click="goToAddPage()"
             class="px-4 py-2 bg-white mb-4 text-black border border-gray-300 rounded-md hover:bg-gray-200 transition duration-200 text-sm">
             新增產品
         </button>
+
+        <div class="mb-4 flex items-center space-x-4">
+            <select v-model="selectedProduct" id="productList"
+                class="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md">
+                <option v-for="product in productLists" :key="product" :value="product">
+                    {{ product }}
+                </option>
+            </select>
+
+            <button @click="searchProduct"
+                class="px-4 py-2 bg-white mb-4 text-black border border-gray-300 rounded-md hover:bg-gray-200 transition duration-200 text-sm">
+                查詢
+            </button>
+        </div>
 
         <!-- 產品表格 -->
         <table class="w-full border-collapse border border-gray-300 mx-auto">

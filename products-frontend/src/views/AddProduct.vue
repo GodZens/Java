@@ -111,7 +111,3 @@ onMounted(() => {
 });
 
 </script>
-
-<style scoped>
-/* 可以加一些額外的樣式，根據需要調整 */
-</style>
